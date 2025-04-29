@@ -1,0 +1,6 @@
+{
+    "Flu": { "name": "Dr. Alice", "specialization": "General Physician", "contact": "alice@example.com" },
+    "Diabetes": { "name": "Dr. Bob", "specialization": "Endocrinologist", "contact": "bob@example.com" },
+    "Covid": { "name": "Dr. Carol", "specialization": "Pulmonologist", "contact": "carol@example.com" }
+  }
+  

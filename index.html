@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Medblock</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+</head>
+<body>
+    <h2>Medblock - Simple Medical Record DApp</h2>
+
+    <h3>1. Register Patient</h3>
+    <input id="name" placeholder="Name" />
+    <input id="age" type="number" placeholder="Age" />
+    <input id="sex" placeholder="Sex" />
+    <input id="diagnosis" placeholder="Diagnosis" />
+    <button onclick="registerPatient()">Register</button>
+
+    <h3>2. Find Doctor by Diagnosis</h3>
+    <input id="searchDiagnosis" placeholder="Diagnosis" />
+    <button onclick="findDoctor()">Find Doctor</button>
+    <pre id="doctorInfo"></pre>
+
+    <h3>3. View My Record (Patient)</h3>
+    <button onclick="getMyRecord()">Get My Record</button>
+    <pre id="myRecord"></pre>
+
+    <h3>4. View Patient Record (Doctor)</h3>
+    <input id="patientAddr" placeholder="Patient Address" />
+    <button onclick="getPatientRecord()">Get Patient Record</button>
+    <pre id="doctorViewRecord"></pre>
+
+    <script>
+        const contractABI = [
+            {
+                "inputs": [
+                    { "internalType": "string", "name": "_name", "type": "string" },
+                    { "internalType": "uint256", "name": "_age", "type": "uint256" },
+                    { "internalType": "string", "name": "_sex", "type": "string" },
+                    { "internalType": "string", "name": "_diagnosis", "type": "string" }
+                ],
+                "name": "registerPatient",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getMyRecord",
+                "outputs": [
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "uint256", "name": "", "type": "uint256" },
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    { "internalType": "address", "name": "_patientAddr", "type": "address" }
+                ],
+                "name": "getPatientRecord",
+                "outputs": [
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "uint256", "name": "", "type": "uint256" },
+                    { "internalType": "string", "name": "", "type": "string" },
+                    { "internalType": "string", "name": "", "type": "string" }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const contractAddress = "0xe08b7f35c9f9112dc1c04b4a2bb4b7378f0bf12e"; // Replace this
+        let web3;
+        let contract;
+        let accounts;
+
+        window.addEventListener('load', async () => {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                accounts = await web3.eth.getAccounts();
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+            } else {
+                alert("Install MetaMask to use this DApp");
+            }
+        });
+
+        async function registerPatient() {
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const sex = document.getElementById('sex').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+
+            await contract.methods.registerPatient(name, age, sex, diagnosis)
+                .send({ from: accounts[0] });
+
+            alert("Patient Registered Successfully");
+        }
+
+        async function getMyRecord() {
+            const result = await contract.methods.getMyRecord().call({ from: accounts[0] });
+            document.getElementById('myRecord').innerText =
+                `Name: ${result[0]}\nAge: ${result[1]}\nSex: ${result[2]}\nDiagnosis: ${result[3]}`;
+        }
+
+        async function getPatientRecord() {
+            const addr = document.getElementById('patientAddr').value;
+            const result = await contract.methods.getPatientRecord(addr).call();
+            document.getElementById('doctorViewRecord').innerText =
+                `Name: ${result[0]}\nAge: ${result[1]}\nSex: ${result[2]}\nDiagnosis: ${result[3]}`;
+        }
+
+        async function findDoctor() {
+            const diagnosis = document.getElementById('searchDiagnosis').value;
+            const res = await fetch("doctors.json");
+            const data = await res.json();
+            const doc = data[diagnosis];
+            if (doc) {
+                document.getElementById('doctorInfo').innerText =
+                    `Name: ${doc.name}\nSpecialization: ${doc.specialization}\nContact: ${doc.contact}`;
+            } else {
+                document.getElementById('doctorInfo').innerText = "No doctor found for this diagnosis.";
+            }
+        }
+    </script>
+</body>
+</html>
